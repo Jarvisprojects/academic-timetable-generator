@@ -33,6 +33,9 @@ if (warnings.length > 0) {
 
 const app = express();
 
+// Required when running behind reverse proxies (e.g., Codespaces) so rate limiting can resolve client IP safely.
+app.set('trust proxy', 1);
+
 // ========== SECURITY MIDDLEWARE ==========
 // Add all HTTP headers for security (must be early)
 app.use(helmet({
