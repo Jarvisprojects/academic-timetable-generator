@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Year: <%= year %> - Timetable</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .timetable-cell {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem;
+            vertical-align: top;
+            min-width: 120px;
+        }
+        .event-item {
+            margin-bottom: 0.25rem;
+            padding: 0.25rem;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+        }
+        .lecture {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+        }
+        .practical {
+            background-color: #f0fdf4;
+            border-left: 4px solid #22c55e;
+        }
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+            .break-row { background-color: #fef3c7 !important; }
+            .merged-break-cell { background-color: #fef3c7 !important; }
+        }
+        .break-row {
+            background-color: #fef3c7;
+        }
+        .merged-break-cell {
+            background-color: #fef3c7;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: 500;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body class="bg-slate-100">
+    <nav class="bg-white shadow-sm border-b border-slate-200 no-print">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="/" class="text-xl font-bold text-blue-600">Timetable Scheduler</a>
+                <div class="flex items-center gap-4">
+                    <span id="username" class="text-sm text-slate-600"></span>
+                    <button onclick="logout()" class="text-sm text-red-600 hover:text-red-800">Logout</button>
+                    <button onclick="window.print()" class="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Print</button>
+                    <button id="export-csv" class="text-sm bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export CSV</button>
+                    <a href="/year-grid?id=<%= timetable.id %>" class="text-sm bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">All Years</a>
+                    <a href="/grid?id=<%= timetable.id %>" class="text-sm text-slate-600 hover:text-slate-800">← Main Grid</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="text-2xl font-bold">Year: <%= year %></h1>
+                <p class="text-slate-500"><%= timetable.name %></p>
+            </div>
+        </div>
+
+        <%
+            // Get all slot mappings
+            const allSlots = Object.entries(slotMapping).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+            
+            // Get breaks from input_json
+            const breaks = timetable.input_json.breaks || {};
+            const yearBreaks = breaks[year] || [];
+            
+            // Parse time to minutes for comparison
+            function timeToMinutes(timeStr) {
+                const [time, modifier] = timeStr.split(' ');
+                let [hours, minutes] = time.split(':').map(Number);
+                if (modifier === 'PM' && hours !== 12) hours += 12;
+                if (modifier === 'AM' && hours === 12) hours = 0;
+                return hours * 60 + minutes;
+            }
+            
+            // Create a combined timeline of slots and breaks
+            const timeline = [];
+            
+            // Add all slots
+            allSlots.forEach(([slotIdx, timeRange]) => {
+                timeline.push({
+                    type: 'slot',
+                    slotIdx: parseInt(slotIdx),
+                    start: timeRange[0],
+                    end: timeRange[1],
+                    startMinutes: timeToMinutes(timeRange[0]),
+                    endMinutes: timeToMinutes(timeRange[1]),
+                    events: []
+                });
+            });
+            
+            // Add breaks with their actual names
+            yearBreaks.forEach(breakItem => {
+                timeline.push({
+                    type: 'break',
+                    name: breakItem.name || 'Break',
+                    start: breakItem.start,
+                    end: breakItem.end,
+                    startMinutes: timeToMinutes(breakItem.start),
+                    endMinutes: timeToMinutes(breakItem.end),
+                    events: []
+                });
+            });
+            
+            // Sort timeline by start time
+            timeline.sort((a, b) => a.startMinutes - b.startMinutes);
+            
+            // Merge overlapping/adjacent breaks
+            const mergedTimeline = [];
+            for (let i = 0; i < timeline.length; i++) {
+                const current = timeline[i];
+                if (current.type === 'slot') {
+                    mergedTimeline.push(current);
+                    continue;
+                }
+                
+                // Merge consecutive breaks
+                let breakEnd = current.endMinutes;
+                let breakNames = [current.name];
+                let j = i + 1;
+                while (j < timeline.length && timeline[j].type === 'break') {
+                    if (timeline[j].startMinutes <= breakEnd) {
+                        breakEnd = Math.max(breakEnd, timeline[j].endMinutes);
+                        breakNames.push(timeline[j].name);
+                        j++;
+                    } else {
+                        break;
+                    }
+                }
+                
+                mergedTimeline.push({
+                    type: 'break',
+                    name: breakNames.join(' + '),
+                    start: current.start,
+                    end: new Date(0, 0, 0, Math.floor(breakEnd / 60), breakEnd % 60).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    startMinutes: current.startMinutes,
+                    endMinutes: breakEnd,
+                    events: []
+                });
+                
+                i = j - 1;
+            }
+            
+            // Build event grid
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            const daysCount = timetable.input_json.time_settings.days || 5;
+            
+            // Initialize events for each timeline item
+            mergedTimeline.forEach(item => {
+                item.eventsByDay = {};
+                for (let d = 0; d < daysCount; d++) {
+                    item.eventsByDay[d] = [];
+                }
+            });
+            
+            // Assign events to timeline items based on time overlap
+            events.forEach(ev => {
+                const eventStart = timeToMinutes(ev.start_time);
+                const eventEnd = timeToMinutes(ev.end_time);
+                
+                mergedTimeline.forEach(item => {
+                    const overlap = (eventStart < item.endMinutes && eventEnd > item.startMinutes);
+                    if (overlap && item.type === 'slot') {
+                        item.eventsByDay[ev.day].push(ev);
+                    }
+                });
+            });
+        %>
+
+        <div class="overflow-x-auto bg-white rounded shadow mt-6">
+            <table class="min-w-full border-collapse">
+                <thead>
+                    <tr class="bg-slate-50">
+                        <th class="border p-2">Time</th>
+                        <% for(let i = 0; i < daysCount; i++) { %>
+                            <th class="border p-2"><%= dayNames[i] %></th>
+                        <% } %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% mergedTimeline.forEach(item => { %>
+                        <tr class="<%= item.type === 'break' ? 'break-row' : '' %>">
+                            <td class="border p-2 font-medium <%= item.type === 'break' ? 'bg-amber-50' : '' %>">
+                                <%= item.start %> – <%= item.end %>
+                            </td>
+                            
+                            <% if(item.type === 'break') { %>
+                                <td colspan="<%= daysCount %>" class="border p-4 merged-break-cell">
+                                    <%= item.name %>
+                                </td>
+                            <% } else { %>
+                                <% for(let d = 0; d < daysCount; d++) { %>
+                                    <td class="border p-2 align-top">
+                                        <% const evs = item.eventsByDay[d]; %>
+                                        <% if(evs && evs.length) { %>
+                                            <% evs.forEach(ev => { %>
+                                                <div class="event-item <%= ev.type === 'lecture' ? 'lecture' : 'practical' %>">
+                                                    <div class="font-semibold"><%= ev.subject %></div>
+                                                    <div><%= ev.type === 'lecture' ? 'Lecture' : 'Practical' %></div>
+                                                    <% if(ev.type === 'lecture') { %>
+                                                        <div>Teacher: <%= ev.teacher %></div>
+                                                        <div>Room: <%= ev.room %></div>
+                                                    <% } else { %>
+                                                        <div>Lab: <%= ev.lab %></div>
+                                                        <div>Batch: <%= ev.batch %></div>
+                                                    <% } %>
+                                                </div>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <div class="text-center text-gray-400 text-xs">—</div>
+                                        <% } %>
+                                    </td>
+                                <% } %>
+                            <% } %>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="/js/api.js"></script>
+    <script>
+        (async () => {
+            try {
+                const user = await checkAuth();
+                document.getElementById('username').textContent = `Hello, ${user.username}`;
+            } catch(e) {}
+        })();
+        
+        document.getElementById('export-csv').addEventListener('click', () => {
+            let csv = '';
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const rowData = [];
+                const cells = row.querySelectorAll('td');
+                cells.forEach(cell => {
+                    const events = cell.querySelectorAll('.event-item');
+                    let content = '';
+                    if (events.length) {
+                        const texts = [];
+                        events.forEach(ev => {
+                            const title = ev.querySelector('.font-semibold')?.innerText || '';
+                            const details = ev.innerText.replace(title, '').trim();
+                            texts.push(`${title} ${details}`);
+                        });
+                        content = texts.join('; ');
+                    } else {
+                        const cellText = cell.innerText.trim();
+                        if (cellText && cellText !== '—') {
+                            content = cellText;
+                        } else {
+                            content = '—';
+                        }
+                    }
+                    rowData.push(`"${content.replace(/"/g, '""')}"`);
+                });
+                csv += rowData.join(',') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `year_<%= year.replace(/[^a-z0-9]/gi, '_') %>_timetable.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        });
+    </script>
+</body>
+</html>

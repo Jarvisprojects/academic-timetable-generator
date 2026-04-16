@@ -1,0 +1,128 @@
+# 📅 Timetable Scheduler
+
+A smart timetable generation system that automatically creates **conflict‑free schedules** using **Google OR‑Tools**.
+
+## 🚀 Features
+
+- Automatic timetable generation
+- Manage teachers, subjects, rooms, groups
+- **JWT authentication** (username/password)
+- **Admin** + **regular user** roles
+- Background scheduling
+- Simple UI + JSON input
+
+## 🛠 Tech Stack
+
+- Backend: Node.js (Express)
+- Database: PostgreSQL
+- Solver: Python (OR‑Tools)
+- Authentication: JWT
+- Frontend: HTML, TailwindCSS, JavaScript
+
+## 📦 Prerequisites
+
+- Node.js (v18+) → [https://nodejs.org](https://nodejs.org)
+- Python (v3.9+) → [https://python.org](https://python.org)
+- PostgreSQL (v13+) → [https://postgresql.org](https://postgresql.org)
+
+## ⚙️ Setup Guide
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/yourusername/timetable-scheduler.git
+cd timetable-scheduler
+2. Install Dependencies
+bash
+npm install
+3. Setup Python Environment
+🐧 Linux / 🍎 macOS
+bash
+python3 -m venv venv
+source venv/bin/activate
+pip install ortools
+deactivate
+🪟 Windows
+bash
+python -m venv venv
+venv\Scripts\activate
+pip install ortools
+deactivate
+4. Setup PostgreSQL Database
+Open PostgreSQL shell and run:
+
+sql
+CREATE DATABASE timetable_db;
+
+CREATE USER timetable_user WITH PASSWORD 'your_password';
+
+ALTER DATABASE timetable_db OWNER TO timetable_user;
+
+\c timetable_db
+
+GRANT ALL ON SCHEMA public TO timetable_user;
+ALTER SCHEMA public OWNER TO timetable_user;
+Exit with \q.
+
+5. Configure Environment Variables
+Create a .env file in the root folder:
+
+env
+PORT=3000
+
+DATABASE_URL=postgresql://timetable_user:your_password@localhost:5432/timetable_db
+JWT_SECRET=your_secret_key
+
+# Python path – uncomment the one that matches your OS
+# Linux/macOS:
+# PYTHON_PATH=venv/bin/python
+# Windows:
+PYTHON_PATH=venv\Scripts\python.exe
+6. Initialize Database
+bash
+npm run setup
+Follow the prompts to create an admin account.
+
+7. Start Server
+bash
+npm start
+8. Open App
+text
+http://localhost:3000
+👤 Access Control
+Role	Permissions
+Admin	Manage users, view audit logs
+Regular user	Create and manage own timetables
+❗ Troubleshooting
+Problem	Solution
+Database connection fails	Check your .env and ensure PostgreSQL is running.
+Python not found	Verify PYTHON_PATH in .env points to the correct Python executable inside the virtual environment.
+Login issues	Ensure the admin account exists; check server logs.
+📁 Project Structure
+text
+timetable-scheduler/
+├── backend/
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Timetable.js
+│   │   └── AuditLog.js
+│   ├── routes/
+│   │   └── api/
+│   │       ├── auth.js
+│   │       ├── timetables.js
+│   │       └── admin.js
+│   ├── scripts/
+│   │   └── setup.js
+│   └── server.js
+├── frontend/
+│   └── js/
+│       └── api.js
+├── views/
+│   ├── admin.ejs
+│   ├── dashboard.ejs
+│   └── ...
+├── .env
+├── package.json
+└── README.md
+📜 License
+ISC

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Generator</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+<!-- NAVBAR -->
+<nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
+
+        <div class="flex items-center gap-2">
+            <div class="bg-blue-600 p-1.5 rounded-lg">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <span class="text-xl font-bold text-slate-900">
+                Timetable <span class="text-blue-600">Generator</span>
+            </span>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span id="username" class="text-sm text-slate-600 bg-slate-100 px-3 py-1 rounded-full"></span>
+
+            <button onclick="logout()" class="text-sm text-red-500 hover:text-red-700">
+                Logout
+            </button>
+        </div>
+
+    </div>
+</nav>
+
+<!-- MAIN -->
+<main class="max-w-7xl mx-auto px-4 py-12">
+
+    <!-- HEADER -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-extrabold text-slate-900 mb-3">
+            <%= timetable.name %>
+        </h1>
+        <p class="text-slate-500 text-lg">
+            <%= timetable.description || 'No description available' %>
+        </p>
+    </div>
+
+    <!-- CENTER BUTTONS -->
+    <div class="flex flex-col items-center justify-center min-h-[60vh] gap-10">
+
+        <h2 class="text-3xl font-bold text-slate-800">
+            Select View
+        </h2>
+
+        <div class="flex flex-col md:flex-row gap-8">
+
+            <!-- YEAR -->
+            <a href="/year-grid?id=<%= timetable.id %>" 
+               class="w-64 text-center px-10 py-6 text-xl font-semibold bg-blue-600 text-white rounded-2xl shadow-lg hover:bg-blue-700 transition">
+                Year View
+            </a>
+
+            <!-- BATCH -->
+            <a href="/batch-grid?id=<%= timetable.id %>" 
+               class="w-64 text-center px-10 py-6 text-xl font-semibold bg-emerald-600 text-white rounded-2xl shadow-lg hover:bg-emerald-700 transition">
+                Batch View
+            </a>
+
+            <!-- TEACHER -->
+            <a href="/teacher-grid?id=<%= timetable.id %>" 
+               class="w-64 text-center px-10 py-6 text-xl font-semibold bg-purple-600 text-white rounded-2xl shadow-lg hover:bg-purple-700 transition">
+                Teacher View
+            </a>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="mt-16 text-center border-t pt-6 text-slate-400 text-sm">
+        Organize, Optimize, and Export with ease.
+    </div>
+
+</main>
+
+<script src="/js/api.js"></script>
+
+<script>
+(async () => {
+    try {
+        const user = await checkAuth();
+        document.getElementById('username').textContent = `Hi, ${user.username}`;
+    } catch (e) {}
+})();
+</script>
+
+</body>
+</html>

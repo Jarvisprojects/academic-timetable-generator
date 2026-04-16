@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Timetable - Timetable Scheduler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100">
+    <nav class="bg-white shadow p-4">
+      <div class="container mx-auto flex justify-between">
+        <a href="/" class="text-xl font-bold">Timetable Scheduler</a>
+        <div>
+          <span class="mr-4" id="username"></span>
+          <button onclick="logout()" class="text-blue-600 hover:underline">
+            Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+    <main class="container mx-auto p-4">
+      <div id="content" class="bg-white p-6 rounded shadow">Loading...</div>
+      <div class="mt-4">
+        <a href="/dashboard" class="text-blue-600 hover:underline"
+          >← Back to Dashboard</a
+        >
+      </div>
+    </main>
+    <script src="/js/api.js"></script>
+    <script>
+      (async () => {
+        try {
+          await checkAuth();
+          const urlParams = new URLSearchParams(window.location.search);
+          const id = urlParams.get("id");
+          if (!id) window.location.href = "/dashboard";
+
+          const timetable = await apiFetch(`/api/timetables/${id}`);
+          if (timetable.status !== "success") {
+            window.location.href = `/dashboard`;
+            return;
+          }
+
+          document.getElementById("content").innerHTML = `
+                    <h1 class="text-2xl font-bold mb-4">${escapeHtml(timetable.name)}</h1>
+                    <h2 class="text-xl font-semibold mb-2">Slot Mapping</h2>
+                    <pre class="bg-gray-100 p-4 rounded overflow-auto text-sm">${JSON.stringify(timetable.output_json.slot_mapping, null, 2)}</pre>
+                    <h2 class="text-xl font-semibold mt-6 mb-2">Events</h2>
+                    <pre class="bg-gray-100 p-4 rounded overflow-auto text-sm">${JSON.stringify(timetable.output_json.events, null, 2)}</pre>
+                    <div class="mt-4 flex space-x-4">
+                        <a href="/api/timetables/${id}/download/input" class="text-blue-600 hover:underline" download>Download Input JSON</a>
+                        <a href="/api/timetables/${id}/download/output" class="text-blue-600 hover:underline" download>Download Output JSON</a>
+                    </div>
+                `;
+        } catch (e) {}
+      })();
+
+      function escapeHtml(str) {
+        if (!str) return str;
+        return str.replace(/[&<>]/g, function (m) {
+          if (m === "&") return "&amp;";
+          if (m === "<") return "&lt;";
+          if (m === ">") return "&gt;";
+          return m;
+        });
+      }
+    </script>
+  </body>
+</html>

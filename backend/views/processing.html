@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Processing - Timetable Scheduler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Indeterminate loading bar - shows activity without fake progress */
+      .loading-bar {
+        height: 4px;
+        width: 100%;
+        background-color: #f3f4f6;
+        border-radius: 2px;
+        overflow: hidden;
+        position: relative;
+      }
+      .loading-bar::after {
+        content: "";
+        position: absolute;
+        left: -50%;
+        height: 100%;
+        width: 50%;
+        background-color: #2563eb;
+        border-radius: 2px;
+        animation: loading 1.5s infinite linear;
+      }
+      @keyframes loading {
+        0% { left: -50%; }
+        100% { left: 100%; }
+      }
+      /* Soft pulse to show the app hasn't frozen */
+      .pulse-ring {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: .5; transform: scale(1.05); }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <nav class="bg-white shadow-sm p-4">
+      <div class="container mx-auto flex justify-between items-center">
+        <a href="/" class="text-xl font-bold text-gray-800">Timetable Scheduler</a>
+        <div>
+          <span class="mr-4 text-gray-600" id="username"></span>
+          <button onclick="logout()" class="text-blue-600 hover:text-blue-800 font-medium">
+            Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mx-auto p-4 flex flex-col items-center justify-center" style="min-height: 70vh;">
+      <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100 max-w-sm w-full text-center">
+        
+        <div class="pulse-ring mb-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-full">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v4M7 7h10" />
+                </svg>
+            </div>
+        </div>
+
+        <h1 class="text-lg font-bold text-gray-900 mb-2">Generating Timetable</h1>
+        <p class="text-gray-500 text-sm mb-6">
+          Your request is being processed by the server. 
+        </p>
+
+        <div class="loading-bar mb-4"></div>
+        
+        <div id="status" class="text-xs font-medium text-gray-400 uppercase tracking-widest">
+            Waiting for response
+        </div>
+      </div>
+    </main>
+
+    <script src="/js/api.js"></script>
+    <script>
+      (async () => {
+        try {
+          await checkAuth();
+          const urlParams = new URLSearchParams(window.location.search);
+          const id = urlParams.get("id");
+          if (!id) window.location.href = "/dashboard";
+
+          async function poll() {
+            try {
+              const data = await apiFetch(`/api/timetables/${id}/status`);
+              if (data.status === "success") {
+                window.location.href = `/grid?id=${id}`;
+              } else if (data.status === "failed") {
+                window.location.href = `/failed?id=${id}`;
+              } else {
+                // No status text updates here to keep it honest
+                setTimeout(poll, 2000);
+              }
+            } catch (err) {
+              const statusEl = document.getElementById("status");
+              statusEl.innerHTML = "Connection Interrupted - Retrying";
+              statusEl.classList.add("text-orange-500");
+              setTimeout(poll, 4000);
+            }
+          }
+          poll();
+        } catch (e) {}
+      })();
+    </script>
+  </body>
+</html>

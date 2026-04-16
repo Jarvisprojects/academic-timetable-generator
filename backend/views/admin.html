@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel – Timetable Scheduler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 font-sans">
+    <nav
+      class="bg-white/80 backdrop-blur-sm shadow-sm border-b border-slate-200"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <span class="text-xl font-bold text-slate-800"
+              >Timetable Scheduler – Admin</span
+            >
+          </div>
+          <div class="flex items-center gap-4">
+            <span
+              id="username"
+              class="text-sm font-medium text-slate-600"
+            ></span>
+            <button
+              onclick="logout()"
+              class="text-sm text-red-600 hover:text-red-800"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">Admin Panel</h1>
+        <div class="flex gap-2">
+          <button
+            id="create-user-btn"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            + New User
+          </button>
+          <button
+            id="clear-logs-btn"
+            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            🗑️ Clear Logs
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-slate-200 mb-6">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            onclick="switchTab('users')"
+            id="tab-users"
+            class="py-2 px-1 border-b-2 font-medium text-sm transition-colors border-blue-500 text-blue-600"
+          >
+            Users
+          </button>
+          <button
+            onclick="switchTab('logs')"
+            id="tab-logs"
+            class="py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+          >
+            Audit Logs
+          </button>
+        </nav>
+      </div>
+
+      <!-- Users Table -->
+      <div
+        id="users-panel"
+        class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden"
+      >
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  ID
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Username
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Email
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Role
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Created At
+                </th>
+                <th
+                  class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody" class="bg-white divide-y divide-slate-200">
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                  Loading...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Audit Logs Table (hidden initially) -->
+      <div
+        id="logs-panel"
+        class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden hidden"
+      >
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Date & Time
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Target User
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Action
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Performed By
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase"
+                >
+                  Details
+                </th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody" class="bg-white divide-y divide-slate-200">
+              <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                  Loading...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal for create/edit user -->
+    <div
+      id="user-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+    >
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <h3 class="text-lg font-bold mb-4" id="modal-title">Create User</h3>
+        <form id="user-form">
+          <input type="hidden" id="user-id" />
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Username *</label>
+            <input
+              type="text"
+              id="modal-username"
+              required
+              class="w-full border rounded-lg px-3 py-2"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Email *</label>
+            <input
+              type="email"
+              id="modal-email"
+              required
+              class="w-full border rounded-lg px-3 py-2"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Password</label>
+            <input
+              type="password"
+              id="modal-password"
+              class="w-full border rounded-lg px-3 py-2"
+            />
+            <p class="text-xs text-slate-400 mt-1">
+              Leave blank to keep unchanged when editing.
+            </p>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button
+              type="button"
+              id="close-modal"
+              class="px-4 py-2 border rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+      let currentUser = null;
+      let users = [];
+
+      // Tab switching
+      function switchTab(tab) {
+        if (tab === "users") {
+          document.getElementById("users-panel").classList.remove("hidden");
+          document.getElementById("logs-panel").classList.add("hidden");
+          document
+            .getElementById("tab-users")
+            .classList.add("border-blue-500", "text-blue-600");
+          document
+            .getElementById("tab-users")
+            .classList.remove("border-transparent", "text-slate-500");
+          document
+            .getElementById("tab-logs")
+            .classList.add("border-transparent", "text-slate-500");
+          document
+            .getElementById("tab-logs")
+            .classList.remove("border-blue-500", "text-blue-600");
+          if (users.length === 0) loadUsers();
+        } else {
+          document.getElementById("users-panel").classList.add("hidden");
+          document.getElementById("logs-panel").classList.remove("hidden");
+          document
+            .getElementById("tab-logs")
+            .classList.add("border-blue-500", "text-blue-600");
+          document
+            .getElementById("tab-logs")
+            .classList.remove("border-transparent", "text-slate-500");
+          document
+            .getElementById("tab-users")
+            .classList.add("border-transparent", "text-slate-500");
+          document
+            .getElementById("tab-users")
+            .classList.remove("border-blue-500", "text-blue-600");
+          loadLogs();
+        }
+      }
+
+      // Load audit logs
+      async function loadLogs() {
+        const tbody = document.getElementById("logs-tbody");
+        tbody.innerHTML =
+          '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400">Loading...</td></tr>';
+        try {
+          const logs = await apiFetch("/api/admin/audit-logs");
+          if (logs.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-400">No logs found.</td></tr>';
+            return;
+          }
+          tbody.innerHTML = logs
+            .map((log) => {
+              const date = new Date(log.created_at).toLocaleString();
+              let oldData = log.old_data,
+                newData = log.new_data;
+              if (typeof oldData === "string") oldData = JSON.parse(oldData);
+              if (typeof newData === "string") newData = JSON.parse(newData);
+              oldData = oldData || {};
+              newData = newData || {};
+              let message = "";
+              if (log.action === "created")
+                message = `created user ${escapeHtml(log.target_username)}`;
+              else if (log.action === "deleted")
+                message = `deleted user ${escapeHtml(log.target_username)}`;
+              else if (log.action === "updated") {
+                if (newData.password_changed)
+                  message = `changed password for ${escapeHtml(log.target_username)}`;
+                else
+                  message = `updated user ${escapeHtml(log.target_username)}`;
+              } else {
+                message = `${log.action} user ${escapeHtml(log.target_username)}`;
+              }
+              return `
+              <tr>
+                <td class="px-6 py-4 text-sm">${date}</td>
+                <td class="px-6 py-4">${escapeHtml(log.target_username || "Unknown")}</td>
+                <td class="px-6 py-4">${escapeHtml(log.action)}</td>
+                <td class="px-6 py-4">${escapeHtml(log.actor_username || "Unknown")}</td>
+                <td class="px-6 py-4 text-sm">${escapeHtml(message)}</td>
+              </tr>
+            `;
+            })
+            .join("");
+        } catch (err) {
+          console.error(err);
+          tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-red-400">Error loading logs: ${err.message}</td></tr>`;
+        }
+      }
+
+      // Clear logs
+      async function clearLogs() {
+        if (
+          !confirm(
+            "Are you sure you want to delete ALL audit logs? This action cannot be undone.",
+          )
+        )
+          return;
+        try {
+          await apiFetch("/api/admin/audit-logs", { method: "DELETE" });
+          toast("All logs cleared", "success");
+          if (
+            !document.getElementById("logs-panel").classList.contains("hidden")
+          )
+            loadLogs();
+        } catch (err) {
+          toast(err.message, "error");
+        }
+      }
+
+      // Load users list
+      async function loadUsers() {
+        const res = await apiFetch("/api/admin/users");
+        users = res;
+        renderUsers();
+      }
+
+      function getRoleLabel(user) {
+        return user.is_admin ? "👑 Admin" : "👤 User";
+      }
+
+      function canEdit(user) {
+        // Only admin can edit, and cannot edit the admin account
+        if (!currentUser.is_admin) return false;
+        if (user.id === currentUser.id) return false;
+        return true;
+      }
+
+      function canDelete(user) {
+        // Cannot delete admin or self
+        if (user.id === currentUser.id) return false;
+        if (user.is_admin) return false;
+        return currentUser.is_admin;
+      }
+
+      function renderUsers() {
+        const tbody = document.getElementById("users-tbody");
+        if (users.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="6" class="px-6 py-12 text-center text-slate-400">No users found.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = users
+          .map(
+            (user) => `
+          <tr>
+            <td class="px-6 py-4">${user.id}</td>
+            <td class="px-6 py-4">${escapeHtml(user.username)}</td>
+            <td class="px-6 py-4">${escapeHtml(user.email)}</td>
+            <td class="px-6 py-4">${getRoleLabel(user)}</td>
+            <td class="px-6 py-4 text-sm">${new Date(user.created_at).toLocaleDateString()}</td>
+            <td class="px-6 py-4 text-right">
+              ${canEdit(user) ? `<button onclick="editUser(${user.id})" class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>` : ""}
+              ${canDelete(user) ? `<button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-800">Delete</button>` : ""}
+            </td>
+          </tr>
+        `,
+          )
+          .join("");
+      }
+
+      async function deleteUser(id) {
+        if (
+          !confirm(
+            "Delete this user? All their timetables will be permanently removed.",
+          )
+        )
+          return;
+        try {
+          await apiFetch(`/api/admin/users/${id}`, { method: "DELETE" });
+          await loadUsers();
+          toast("User deleted", "success");
+          if (
+            !document.getElementById("logs-panel").classList.contains("hidden")
+          )
+            loadLogs();
+        } catch (err) {
+          toast(err.message, "error");
+        }
+      }
+
+      function editUser(id) {
+        const user = users.find((u) => u.id === id);
+        if (!user) return;
+        document.getElementById("modal-title").textContent = "Edit User";
+        document.getElementById("user-id").value = user.id;
+        document.getElementById("modal-username").value = user.username;
+        document.getElementById("modal-email").value = user.email;
+        document.getElementById("modal-password").value = "";
+        document.getElementById("user-modal").classList.remove("hidden");
+      }
+
+      document
+        .getElementById("create-user-btn")
+        .addEventListener("click", () => {
+          document.getElementById("modal-title").textContent = "Create User";
+          document.getElementById("user-id").value = "";
+          document.getElementById("modal-username").value = "";
+          document.getElementById("modal-email").value = "";
+          document.getElementById("modal-password").value = "";
+          document.getElementById("user-modal").classList.remove("hidden");
+        });
+
+      document.getElementById("close-modal").addEventListener("click", () => {
+        document.getElementById("user-modal").classList.add("hidden");
+      });
+
+      document
+        .getElementById("user-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = document.getElementById("user-id").value;
+          const username = document
+            .getElementById("modal-username")
+            .value.trim();
+          const email = document.getElementById("modal-email").value.trim();
+          const password = document.getElementById("modal-password").value;
+
+          if (!username || !email) {
+            alert("Username and email are required");
+            return;
+          }
+
+          const payload = { username, email };
+          if (password) payload.password = password;
+
+          try {
+            if (id) {
+              await apiFetch(`/api/admin/users/${id}`, {
+                method: "PUT",
+                body: JSON.stringify(payload),
+              });
+              toast("User updated", "success");
+            } else {
+              await apiFetch("/api/admin/users", {
+                method: "POST",
+                body: JSON.stringify(payload),
+              });
+              toast("User created", "success");
+            }
+            document.getElementById("user-modal").classList.add("hidden");
+            await loadUsers();
+            if (
+              !document
+                .getElementById("logs-panel")
+                .classList.contains("hidden")
+            )
+              loadLogs();
+          } catch (err) {
+            toast(err.message, "error");
+          }
+        });
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, (m) =>
+          m === "&" ? "&amp;" : m === "<" ? "&lt;" : "&gt;",
+        );
+      }
+
+      function toast(msg, type) {
+        const div = document.createElement("div");
+        div.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white ${type === "success" ? "bg-green-600" : "bg-red-600"}`;
+        div.textContent = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
+      }
+
+      // Initial load
+      (async () => {
+        try {
+          currentUser = await checkAuth();
+          document.getElementById("username").textContent =
+            `Hello, ${currentUser.username}`;
+          if (!currentUser.is_admin) {
+            window.location.href = "/dashboard";
+            return;
+          }
+          document
+            .getElementById("clear-logs-btn")
+            .addEventListener("click", clearLogs);
+          await loadUsers();
+        } catch (e) {}
+      })();
+    </script>
+  </body>
+</html>
