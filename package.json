@@ -5,7 +5,10 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "setup": "node backend/scripts/setup.js"
+    "dev": "node backend/server.js",
+    "setup": "node backend/scripts/autoSetup.js",
+    "setup:db": "node backend/scripts/setup.js",
+    "setup:admin": "node backend/scripts/setup.js --admin-only"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +20,9 @@
     "dotenv": "^17.3.1",
     "ejs": "^5.0.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.0",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0"
   }

@@ -48,8 +48,9 @@ def solve_timetable(json_input: dict) -> dict:
         from ortools.sat.python import cp_model
         solver = cp_model.CpSolver()
         solver.parameters.random_seed = 42
-        solver.parameters.num_search_workers = 1
-        solver.parameters.max_time_in_seconds = 120
+        solver.parameters.num_search_workers = 4
+        solver.parameters.max_time_in_seconds = 60
+        solver.parameters.log_search_progress = False
 
         status = solver.Solve(model)
 

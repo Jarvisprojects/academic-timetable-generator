@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const User = require('../../models/User');
 const AuditLog = require('../../models/AuditLog');
+const { validations, handleValidationErrors, validateJsonInput } = require('../../middleware/validation');
+
+// Apply JSON validation to all routes
+router.use(validateJsonInput);
 
 // Middleware to ensure user is authenticated and is admin
 function requireAdmin(req, res, next) {
@@ -22,10 +26,14 @@ router.get('/users', requireAdmin, async (req, res) => {
     }
 });
 
-router.post('/users', requireAdmin, async (req, res) => {
+router.post('/users', requireAdmin, ...validations.username, ...validations.email, handleValidationErrors, async (req, res) => {
     const { username, email, password } = req.body;
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    if (!username || !email) {
+        return res.status(400).json({ error: 'Missing required fields: username and email' });
+    }
+    // Password is required for new users
+    if (!password || password.length < 8) {
+        return res.status(400).json({ error: 'Password is required and must be at least 8 characters' });
     }
     try {
         // Always create regular user (is_admin = false)
@@ -50,9 +58,10 @@ router.post('/users', requireAdmin, async (req, res) => {
     }
 });
 
-router.put('/users/:id', requireAdmin, async (req, res) => {
+router.put('/users/:id', requireAdmin, ...validations.id, ...validations.usernameOptional, ...validations.emailOptional, ...validations.passwordOptional, handleValidationErrors, async (req, res) => {
     const { id } = req.params;
     const { username, email, password } = req.body;
+    
     try {
         const user = await User.findById(id);
         if (!user) return res.status(404).json({ error: 'User not found' });
@@ -80,7 +89,7 @@ router.put('/users/:id', requireAdmin, async (req, res) => {
     }
 });
 
-router.delete('/users/:id', requireAdmin, async (req, res) => {
+router.delete('/users/:id', requireAdmin, ...validations.id, handleValidationErrors, async (req, res) => {
     const { id } = req.params;
     try {
         const user = await User.findById(id);

@@ -40,7 +40,8 @@
               class="text-sm font-medium text-slate-600"
             ></span>
             <button
-              onclick="logout()"
+              type="button"
+              onclick="event.preventDefault(); logout();"
               class="text-sm text-red-600 hover:text-red-800"
             >
               Logout
@@ -217,14 +218,14 @@
             />
           </div>
           <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Password</label>
+            <label class="block text-sm font-medium mb-1">Password <span id="password-required" class="text-red-600">*</span></label>
             <input
               type="password"
               id="modal-password"
               class="w-full border rounded-lg px-3 py-2"
             />
-            <p class="text-xs text-slate-400 mt-1">
-              Leave blank to keep unchanged when editing.
+            <p id="password-help" class="text-xs text-slate-400 mt-1">
+              Password must be at least 8 characters.
             </p>
           </div>
           <div class="flex justify-end gap-2">
@@ -438,6 +439,8 @@
         document.getElementById("modal-username").value = user.username;
         document.getElementById("modal-email").value = user.email;
         document.getElementById("modal-password").value = "";
+        document.getElementById("password-required").classList.add("hidden");
+        document.getElementById("password-help").textContent = "Leave blank to keep current password.";
         document.getElementById("user-modal").classList.remove("hidden");
       }
 
@@ -449,6 +452,8 @@
           document.getElementById("modal-username").value = "";
           document.getElementById("modal-email").value = "";
           document.getElementById("modal-password").value = "";
+          document.getElementById("password-required").classList.remove("hidden");
+          document.getElementById("password-help").textContent = "Password must be at least 8 characters.";
           document.getElementById("user-modal").classList.remove("hidden");
         });
 
@@ -468,7 +473,19 @@
           const password = document.getElementById("modal-password").value;
 
           if (!username || !email) {
-            alert("Username and email are required");
+            toast("Username and email are required", "error");
+            return;
+          }
+          
+          // For new users, password is required
+          if (!id && !password) {
+            toast("Password is required for new users (min 8 characters)", "error");
+            return;
+          }
+          
+          // For new users, validate password length
+          if (!id && password && password.length < 8) {
+            toast("Password must be at least 8 characters", "error");
             return;
           }
 

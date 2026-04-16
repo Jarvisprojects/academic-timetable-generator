@@ -1,96 +1,452 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login – Timetable Scheduler</title>
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gradient-to-br from-slate-50 to-slate-100">
-    <div class="min-h-screen flex items-center justify-center px-4">
-      <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
-        <div class="text-center mb-8">
-          <div
-            class="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center"
-          >
-            <svg
-              class="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-          </div>
-          <h2 class="text-3xl font-bold text-slate-800 mt-4">Welcome back</h2>
-          <p class="text-slate-500">Sign in to your account</p>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); }
+        
+        /* Input field base styles */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .input-field::placeholder {
+            color: #94a3b8;
+        }
+        
+        /* Input icons */
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            width: 1.25rem;
+            height: 1.25rem;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+        
+        .input-field:focus ~ .input-icon,
+        .input-field:not(:placeholder-shown) ~ .input-icon {
+            color: #3b82f6;
+        }
+        
+        /* Error state */
+        .input-field.is-error {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        
+        .input-field.is-error:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        
+        /* Success state */
+        .input-field.is-valid {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+        
+        .input-field.is-valid:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        /* Error message */
+        .error-message {
+            display: none;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #ef4444;
+            animation: slideInDown 0.2s ease-out;
+        }
+        
+        .error-message.show {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Success message */
+        .success-message {
+            display: none;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #10b981;
+        }
+        
+        .success-message.show {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Eye toggle button */
+        #togglePassword {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        #togglePassword:hover {
+            color: #3b82f6;
+        }
+        
+        #togglePassword svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        
+        /* Eye icon animation */
+        #togglePassword:hover svg {
+            animation: pulse 0.3s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Alert animations */
+        .rounded-lg.p-4.mb-4.border {
+            animation: slideInDown 0.3s ease-out;
+        }
+        
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Field wrapper */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center px-4 py-8">
+        <div class="glass rounded-2xl shadow-2xl max-w-md w-full p-8 border border-white/50">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="mx-auto w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-slate-900">Welcome Back</h1>
+                <p class="text-slate-600 mt-2">Sign in to your account</p>
+            </div>
+
+            <!-- Error Alert -->
+            <div id="alertContainer" class="mb-6"></div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <!-- Username Field -->
+                <div class="input-wrapper">
+                    <label for="username" class="block text-sm font-semibold text-slate-700 mb-2">
+                        Username <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            required
+                            placeholder="your_username"
+                            class="input-field"
+                            aria-label="Username"
+                        />
+                        <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <div id="username-error" class="error-message">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
+                        </svg>
+                        <span id="username-error-text"></span>
+                    </div>
+                    <div id="username-success" class="success-message">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                        </svg>
+                        <span>Valid username</span>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="input-wrapper">
+                    <label for="password" class="block text-sm font-semibold text-slate-700 mb-2">
+                        Password <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                            placeholder="••••••••"
+                            class="input-field pr-10"
+                            aria-label="Password"
+                        />
+                        <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            aria-label="Toggle password visibility"
+                            title="Toggle password visibility"
+                        >
+                            <svg id="eyeIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="password-error" class="error-message">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
+                        </svg>
+                        <span id="password-error-text"></span>
+                    </div>
+                    <div id="password-success" class="success-message">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                        </svg>
+                        <span>Password is valid</span>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button
+                    type="submit"
+                    id="submit-btn"
+                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition duration-200 mt-6"
+                    data-original-text="Sign In"
+                >
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="mt-6 text-center text-sm text-slate-600">
+                <p>Demo credentials available • Contact admin for access</p>
+            </div>
         </div>
-        <div
-          id="error"
-          class="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded mb-4 hidden"
-        ></div>
-        <form id="login-form">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Username</label
-            >
-            <input
-              type="text"
-              name="username"
-              required
-              class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-slate-700 mb-1"
-              >Password</label
-            >
-            <input
-              type="password"
-              name="password"
-              required
-              class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <button
-            type="submit"
-            class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Sign In
-          </button>
-        </form>
-      </div>
     </div>
+
+    <script src="/js/dom-safe.js"></script>
     <script src="/js/api.js"></script>
+    <script src="/js/ui-helpers.js"></script>
+    <script src="/js/validation.js"></script>
+
     <script>
-      if (localStorage.getItem("token")) {
-        fetch("/api/auth/me", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
-          .then((res) => res.ok && window.location.replace("/dashboard"))
-          .catch(() => {});
-      }
-      document
-        .getElementById("login-form")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const form = e.target;
-          const username = form.username.value;
-          const password = form.password.value;
-          try {
-            await login(username, password);
-            window.location.href = "/dashboard";
-          } catch (err) {
-            const errDiv = document.getElementById("error");
-            errDiv.textContent = err.message;
-            errDiv.classList.remove("hidden");
-          }
+        // Check if already logged in
+        if (localStorage.getItem("token")) {
+            fetch("/api/auth/me", {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            })
+                .then((res) => res.ok && window.location.replace("/dashboard"))
+                .catch(() => {});
+        }
+
+        // Handle password visibility toggle
+        document.getElementById("togglePassword").addEventListener("click", (e) => {
+            e.preventDefault();
+            const passwordInput = document.getElementById("password");
+            const eyeIcon = document.getElementById("eyeIcon");
+            
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />';
+            } else {
+                passwordInput.type = "password";
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+            }
+        });
+
+        // Real-time validation feedback
+        const usernameInput = document.getElementById("username");
+        const passwordInput = document.getElementById("password");
+        const usernameError = document.getElementById("username-error");
+        const usernameSuccess = document.getElementById("username-success");
+        const passwordError = document.getElementById("password-error");
+        const passwordSuccess = document.getElementById("password-success");
+        const usernameErrorText = document.getElementById("username-error-text");
+        const passwordErrorText = document.getElementById("password-error-text");
+        
+        // Username validation
+        usernameInput.addEventListener("blur", () => {
+            validateUsernameField();
+        });
+        
+        usernameInput.addEventListener("input", () => {
+            if (usernameInput.value.trim().length > 0) {
+                const error = Validation.validateField('username', usernameInput.value.trim());
+                if (error) {
+                    usernameInput.classList.add('is-error');
+                    usernameInput.classList.remove('is-valid');
+                    usernameErrorText.textContent = error;
+                    usernameError.classList.add('show');
+                    usernameSuccess.classList.remove('show');
+                } else {
+                    usernameInput.classList.remove('is-error');
+                    usernameInput.classList.add('is-valid');
+                    usernameError.classList.remove('show');
+                    usernameSuccess.classList.add('show');
+                }
+            } else {
+                usernameInput.classList.remove('is-error', 'is-valid');
+                usernameError.classList.remove('show');
+                usernameSuccess.classList.remove('show');
+            }
+        });
+        
+        // Password validation
+        passwordInput.addEventListener("blur", () => {
+            validatePasswordField();
+        });
+        
+        passwordInput.addEventListener("input", () => {
+            if (passwordInput.value.length > 0) {
+                const error = Validation.validateField('password', passwordInput.value);
+                if (error) {
+                    passwordInput.classList.add('is-error');
+                    passwordInput.classList.remove('is-valid');
+                    passwordErrorText.textContent = error;
+                    passwordError.classList.add('show');
+                    passwordSuccess.classList.remove('show');
+                } else {
+                    passwordInput.classList.remove('is-error');
+                    passwordInput.classList.add('is-valid');
+                    passwordError.classList.remove('show');
+                    passwordSuccess.classList.add('show');
+                }
+            } else {
+                passwordInput.classList.remove('is-error', 'is-valid');
+                passwordError.classList.remove('show');
+                passwordSuccess.classList.remove('show');
+            }
+        });
+        
+        // Helper functions
+        function validateUsernameField() {
+            if (usernameInput.value.trim().length > 0) {
+                const error = Validation.validateField('username', usernameInput.value.trim());
+                if (error) {
+                    usernameInput.classList.add('is-error');
+                    usernameInput.classList.remove('is-valid');
+                    usernameErrorText.textContent = error;
+                    usernameError.classList.add('show');
+                    usernameSuccess.classList.remove('show');
+                    return false;
+                } else {
+                    usernameInput.classList.remove('is-error');
+                    usernameInput.classList.add('is-valid');
+                    usernameError.classList.remove('show');
+                    usernameSuccess.classList.add('show');
+                    return true;
+                }
+            }
+            return true;
+        }
+        
+        function validatePasswordField() {
+            if (passwordInput.value.length > 0) {
+                const error = Validation.validateField('password', passwordInput.value);
+                if (error) {
+                    passwordInput.classList.add('is-error');
+                    passwordInput.classList.remove('is-valid');
+                    passwordErrorText.textContent = error;
+                    passwordError.classList.add('show');
+                    passwordSuccess.classList.remove('show');
+                    return false;
+                } else {
+                    passwordInput.classList.remove('is-error');
+                    passwordInput.classList.add('is-valid');
+                    passwordError.classList.remove('show');
+                    passwordSuccess.classList.add('show');
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        // Handle login form submission
+        document.getElementById("login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            const alertContainer = document.getElementById('alertContainer');
+
+            // Clear previous alerts
+            alertContainer.innerHTML = '';
+
+            // Validate input
+            if (!username || !password) {
+                UI.showAlert('alertContainer', 'Please fill in all fields', 'warning');
+                return;
+            }
+
+            // Validate fields before submission
+            if (!validateUsernameField()) {
+                UI.showAlert('alertContainer', 'Please fix the errors above', 'warning');
+                return;
+            }
+
+            if (!validatePasswordField()) {
+                UI.showAlert('alertContainer', 'Please fix the errors above', 'warning');
+                return;
+            }
+
+            // Show loading state
+            UI.setButtonLoading('submit-btn', true);
+
+            try {
+                await login(username, password);
+                // Login successful - redirect handled by login() function
+            } catch (err) {
+                UI.setButtonLoading('submit-btn', false);
+                const message = err.message || 'Login failed. Please check your credentials.';
+                UI.showAlert('alertContainer', message, 'error', true);
+            }
         });
     </script>
-  </body>
+</body>
 </html>

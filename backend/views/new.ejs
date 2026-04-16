@@ -90,7 +90,7 @@
           </a>
           <div class="flex items-center gap-4">
             <span id="username" class="text-sm font-semibold text-slate-500 hidden sm:inline-block"></span>
-            <button onclick="logout()" class="px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 uppercase tracking-tighter">Sign Out</button>
+            <button type="button" onclick="event.preventDefault(); logout();" class="px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 uppercase tracking-tighter">Sign Out</button>
           </div>
         </div>
       </div>

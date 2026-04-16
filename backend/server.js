@@ -3,13 +3,69 @@ const express = require("express");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
+const { validateEnvironment } = require("./config");
 const authRoutes = require("./routes/api/auth");
 const timetablesRoutes = require("./routes/api/timetables");
 const adminRoutes = require("./routes/api/admin");
 const Timetable = require("./models/Timetable");
 
+// ========== ENVIRONMENT VALIDATION ==========
+const { errors, warnings } = validateEnvironment();
+
+if (errors.length > 0) {
+    console.error("\n❌ CRITICAL CONFIGURATION ERRORS:");
+    errors.forEach(err => console.error(`   - ${err}`));
+    console.error("\n📝 Please fix the following and restart:");
+    console.error("   1. Copy .env.example to .env");
+    console.error("   2. Update all environment variables");
+    console.error("   3. npm run setup (to initialize database)\n");
+    process.exit(1);
+}
+
+if (warnings.length > 0) {
+    console.warn("\n⚠️  CONFIGURATION WARNINGS:");
+    warnings.forEach(warn => console.warn(`   - ${warn}`));
+    console.warn("");
+}
+
 const app = express();
+
+// ========== SECURITY MIDDLEWARE ==========
+// Add all HTTP headers for security (must be early)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com"],
+            scriptSrcAttr: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:"],
+            connectSrc: ["'self'"],
+        },
+    },
+    frameguard: { action: 'deny' },
+    xssFilter: true,
+    noSniff: true,
+}));
+
+// Rate limiting: General 200 requests per 15 minutes
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message: 'Too many requests, please try again later',
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+        res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
+});
+
+// Apply general rate limiter to all routes
+app.use(generalLimiter);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -61,7 +117,7 @@ function requireTimetableAccess(req, res, next) {
 app.get("/", (req, res) => res.render("index"));
 app.get("/login", (req, res) => res.render("login"));
 
-// Auth routes (public)
+// Auth routes (public) with rate limiting for login endpoint
 app.use("/api/auth", authRoutes);
 
 // Protect all other API routes
@@ -250,6 +306,11 @@ app.get(
     }
   },
 );
+
+// Favicon route to prevent 404 errors
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).send();
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

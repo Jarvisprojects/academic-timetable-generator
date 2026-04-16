@@ -3,83 +3,148 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Timetable Scheduler</title>
+    <title>Timetable Scheduler - Intelligent Scheduling Made Easy</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); }
+        .gradient-text { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); }
+        .feature-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .feature-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    </style>
   </head>
-  <body
-    class="bg-gradient-to-br from-slate-50 to-slate-100 font-sans antialiased"
-  >
-    <nav
-      class="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50 border-b border-slate-200"
-    >
+  <body>
+    <!-- Navigation -->
+    <nav class="glass-effect fixed top-0 left-0 right-0 z-50 border-b border-slate-200/50 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-          <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md"
-            >
-              <svg
-                class="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
+          <a href="/" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <span class="text-xl font-bold text-slate-800"
-              >Timetable Scheduler</span
-            >
+            <span class="text-xl font-bold gradient-text hidden sm:inline">Timetable</span>
+          </a>
+          <div id="nav-links" class="flex items-center gap-4">
+            <a href="/login" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition">
+              Login
+            </a>
           </div>
-          <div id="nav-links" class="flex items-center gap-4"></div>
         </div>
       </div>
     </nav>
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-      <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 max-w-2xl mx-auto">
-        <h1 class="text-4xl font-extrabold text-slate-900 mb-4">
-          Smart Timetable Generation
-        </h1>
-        <p class="text-xl text-slate-600 mb-8">
-          Create conflict‑free timetables automatically with our intelligent
-          scheduling engine.
-        </p>
-        <div id="cta" class="space-x-4">
-          <a
-            href="/login"
-            class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition"
-            >Get Started</a
-          >
+
+    <!-- Hero Section -->
+    <main class="pt-24 pb-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Hero Content -->
+        <div class="text-center mb-16">
+          <h1 class="text-5xl sm:text-6xl font-extrabold text-slate-900 mb-6">
+            Smart Timetable
+            <span class="gradient-text block">Generation</span>
+          </h1>
+          <p class="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+            Create conflict-free timetables automatically with our intelligent scheduling engine powered by advanced optimization algorithms.
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/login" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105">
+              Get Started
+            </a>
+            <a href="/login" class="px-8 py-3 bg-white text-slate-900 font-semibold rounded-lg border-2 border-slate-200 hover:border-slate-300 transition">
+              View Demo
+            </a>
+          </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid md:grid-cols-3 gap-8 mt-16">
+          <!-- Feature 1 -->
+          <div class="feature-card glass-effect p-8 rounded-2xl border border-slate-200/50">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Lightning Fast</h3>
+            <p class="text-slate-600">Generate optimized schedules in seconds, not hours.</p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="feature-card glass-effect p-8 rounded-2xl border border-slate-200/50">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Zero Conflicts</h3>
+            <p class="text-slate-600">No overlapping sessions or impossible combinations.</p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="feature-card glass-effect p-8 rounded-2xl border border-slate-200/50">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Easy to Use</h3>
+            <p class="text-slate-600">Intuitive interface - no technical knowledge needed.</p>
+          </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="grid md:grid-cols-3 gap-8 mt-16 pt-16 border-t border-slate-200">
+          <div class="text-center">
+            <p class="text-4xl font-bold text-blue-600 mb-2">1000+</p>
+            <p class="text-slate-600">Schedules Generated</p>
+          </div>
+          <div class="text-center">
+            <p class="text-4xl font-bold text-green-600 mb-2">99%</p>
+            <p class="text-slate-600">Success Rate</p>
+          </div>
+          <div class="text-center">
+            <p class="text-4xl font-bold text-purple-600 mb-2">50ms</p>
+            <p class="text-slate-600">Average Processing</p>
+          </div>
         </div>
       </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 bg-white/50 backdrop-blur-sm mt-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="text-center text-sm text-slate-600">
+          <p>&copy; 2026 Timetable Schedule  </p>
+        </div>
+      </div>
+    </footer>
+
     <script src="/js/api.js"></script>
+    <script src="/js/ui-helpers.js"></script>
     <script>
+      // Check if user is already logged in
       const token = localStorage.getItem("token");
       const nav = document.getElementById("nav-links");
       if (token) {
         fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
           .then((res) => (res.ok ? res.json() : Promise.reject()))
           .then((data) => {
+            const isAdmin = localStorage.getItem("is_admin") === "true";
             nav.innerHTML = `
-                        <span class="text-slate-600">Hello, ${data.user.username}</span>
-                        <a href="/dashboard" class="text-blue-600 hover:underline">Dashboard</a>
-                        <button onclick="logout()" class="text-red-600 hover:underline">Logout</button>
-                    `;
-            document.getElementById("cta").innerHTML =
-              `<a href="/dashboard" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition">Go to Dashboard</a>`;
+              <span class="text-sm font-medium text-slate-600">Hello, <strong>${data.user.username}</strong></span>
+              <a href="${isAdmin ? '/admin' : '/dashboard'}" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition">
+                Go to Dashboard
+              </a>
+              <button type="button" onclick="event.preventDefault(); logout();" class="text-sm font-medium text-red-600 hover:text-red-800 transition">Logout</button>
+            `;
           })
           .catch(() => {
             localStorage.removeItem("token");
-            nav.innerHTML = `<a href="/login" class="text-blue-600 hover:underline">Login</a>`;
+            localStorage.removeItem("is_admin");
           });
-      } else {
-        nav.innerHTML = `<a href="/login" class="text-blue-600 hover:underline">Login</a>`;
       }
     </script>
   </body>

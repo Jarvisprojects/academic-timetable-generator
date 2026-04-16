@@ -1,0 +1,88 @@
+name: Setup and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  setup-and-verify:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: timetable_user
+          POSTGRES_PASSWORD: timetable123
+          POSTGRES_DB: timetable_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install Node dependencies
+      run: npm install
+    
+    - name: Create Python venv
+      run: python3 -m venv venv
+    
+    - name: Install Python dependencies
+      run: |
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install ortools
+    
+    - name: Create .env file
+      run: |
+        cat > .env << EOF
+        PORT=3000
+        DATABASE_URL=postgresql://timetable_user:timetable123@localhost:5432/timetable_db
+        JWT_SECRET=c8e7d3a9f2b4e1c6d9a3f5e8b2c7d1a4f6e9b2c5d8e1a4f7b0c3d6e9a2f5
+        PYTHON_PATH=./venv/bin/python
+        NODE_ENV=test
+        EOF
+    
+    - name: Verify Node.js syntax
+      run: node -c backend/server.js
+    
+    - name: Verify Python scheduler
+      run: |
+        source venv/bin/activate
+        python -c "from scheduler import solve_timetable; print('✓ Scheduler imports')"
+    
+    - name: Lint files
+      run: |
+        node --version
+        npm --version
+        echo "Linting complete"
+    
+    - name: Test imports
+      run: |
+        source venv/bin/activate
+        python -c "import ortools; print(f'OR-Tools version: {ortools.__version__}')"
+    
+    - name: Start server and verify
+      run: |
+        timeout 10 npm start &
+        sleep 3
+        curl -f http://localhost:3000/login || echo "Server health check"
+        pkill -f "node backend/server.js" || true

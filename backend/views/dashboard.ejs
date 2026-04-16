@@ -86,7 +86,8 @@
               class="text-sm font-semibold text-slate-600 bg-slate-100/80 px-3 py-1.5 rounded-full hidden sm:block"
             ></span>
             <button
-              onclick="logout()"
+              type="button"
+              onclick="event.preventDefault(); logout();"
               class="text-sm font-bold text-rose-500 hover:text-rose-700 transition-colors tracking-wide"
             >
               Logout
@@ -555,14 +556,8 @@
         );
       }
 
-      // Logout function (must be global)
-      window.logout = async function logout() {
-        try {
-          await apiFetch("/api/logout", { method: "POST" });
-        } catch (e) {}
-        localStorage.removeItem("token");
-        window.location.href = "/login";
-      };
+      // Logout is exposed globally from api.js - use that instead
+      // window.logout is already defined there
 
       // Expose functions to global scope
       window.deleteTimetable = deleteTimetable;
