@@ -1,216 +1,112 @@
-﻿# 📅 Academic Timetable Generator
+# 📅 Academic Timetable Generator
 
-Automatically generate **conflict-free schedules** using advanced optimization algorithms.
-
-![Status](https://img.shields.io/badge/status-active-success)
-![Node Version](https://img.shields.io/badge/node-18+-green)
-![Python Version](https://img.shields.io/badge/python-3.9+-blue)
-![License](https://img.shields.io/badge/license-ISC-blue)
-
----
+Automatically generate **conflict-free schedules** using Python optimization.
 
 ## ✨ Features
-
-- **Automatic Scheduling** - Generate conflict-free timetables instantly
-- **User Management** - Admin panel for managing users and access
-- **Real-time Status** - Monitor timetable generation progress
-- **JSON Import/Export** - Easy data exchange with JSON format
-- **Audit Logging** - Track all admin actions for compliance
-- **Authentication** - Secure JWT-based login system
-- **Responsive UI** - Beautiful, mobile-friendly interface
-
----
+- Automatic scheduling with no conflicts
+- User management & admin panel
+- Real-time generation progress
+- JSON import/export
+- Audit logging
+- Responsive UI
 
 ## 🛠️ Tech Stack
+| Part | Tech |
+|------|------|
+| Backend | Node.js + Express |
+| Database | PostgreSQL |
+| Optimizer | Python + OR-Tools |
+| Frontend | EJS + Tailwind |
 
-| Component | Technology |
-|-----------|------------|
-| **Backend** | Node.js (Express) |
-| **Database** | PostgreSQL |
-| **Optimization** | Python (Google OR-Tools) |
-| **Frontend** | HTML, EJS, Tailwind CSS, JavaScript |
-| **Authentication** | JWT (JSON Web Tokens) |
+## ⚙️ Prerequisites
+- Node.js v18+ https://nodejs.org/
+- Python v3.9+ https://www.python.org/
+- PostgreSQL v13+ https://www.postgresql.org/
+- Git https://git-scm.com/
 
----
+## 🚀 Setup (5 minutes)
 
-## 📋 Prerequisites
-
-- **Node.js** v18+ → [Download](https://nodejs.org)
-- **Python** 3.9+ → [Download](https://www.python.org)
-- **PostgreSQL** 13+ → [Download](https://www.postgresql.org)
-
----
-
-## 🚀 Quick Start (5 minutes)
-
-**Linux/macOS:**
 ```bash
+# 1. Clone
 git clone https://github.com/yashrajghongane/academic-timetable-generator.git
 cd academic-timetable-generator
-bash setup.sh
+
+# 2. Install dependencies
+npm install
+
+# 3. Setup Database
+createdb timetable_db
+psql -U postgres -d timetable_db -c "
+CREATE USER timetable_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE timetable_db TO timetable_user;
+"
+
+# 4. Configure
+cp .env.example .env
+# Edit .env with your database credentials
+
+# 5. Python Environment
+python3 -m venv venv
+source venv/bin/activate  # macOS/Linux
+# or: venv\Scripts\activate  (Windows)
+pip install ortools
+deactivate
+
+# 6. Initialize & Start
+npm run setup:db
 npm start
 ```
 
-**Windows:**
-```cmd
-git clone https://github.com/yashrajghongane/academic-timetable-generator.git
-cd academic-timetable-generator
-setup.bat
-npm start
-```
+Open **http://localhost:3000** and login!
 
-**For detailed setup instructions**, see [SETUP.md](SETUP.md)
-
----
-
-## 📖 Usage
-
-### Login
-- Open http://localhost:3000
-- Use admin credentials created during setup
-
-### Create Timetable
-1. Click "Create Timetable" on dashboard
-2. Configure:
-   - Teachers, subjects, rooms
-   - Time slots and constraints
-3. Click "Generate" to start scheduling
+## 🧪 Test It
+1. Login with admin account
+2. Create timetable (add teachers, subjects, rooms)
+3. Generate schedule - wait for completion
 4. View results in grid or JSON format
 
-### Admin Panel
-- Manage system users
-- View audit logs of all actions
-- Monitor system health
+See `examples/` for sample data format.
 
----
-
-## 📁 Project Structure
-
+## 📁 Structure
 ```
-academic-timetable-generator/
-├── backend/              # Express.js API
-│   ├── server.js        # Main server
-│   ├── config.js        # Configuration
-│   ├── models/          # Database models
-│   ├── routes/          # API routes
-│   ├── middleware/      # Express middleware
-│   ├── scripts/         # Setup scripts
-│   └── views/           # EJS templates
-├── frontend/            # Client-side code
-│   └── js/             # JavaScript utilities
-├── scheduler/           # Python constraint solver
-├── examples/            # Sample data files
-├── setup.sh            # Linux/macOS automated setup
-├── setup.bat           # Windows automated setup
-├── .env.example        # Environment template
-├── SETUP.md            # Setup instructions
-├── package.json        # Node.js dependencies
-└── README.md           # This file
+backend/     - Express API & templates
+frontend/    - JavaScript code
+scheduler/   - Python optimizer
+examples/    - Sample data
 ```
 
----
-
-## 🔧 Available Commands
-
+## 🔧 Commands
 ```bash
-npm start          # Start the application
-npm run dev        # Start in development mode
-npm run setup      # Run setup wizard (automated)
-npm run setup:db   # Initialize database only
-npm run setup:admin # Create admin account
+npm start         # Start app
+npm run setup:db  # Setup database
+npm run setup:admin # Create admin
 ```
 
----
-
-## 🌍 Environment Variables
-
-Create a `.env` file (copy from `.env.example`):
-
+## 📋 .env Configuration
 ```env
 PORT=3000
-DATABASE_URL=postgresql://user:password@localhost:5432/timetable_db
-JWT_SECRET=your_secret_key_here
+DATABASE_URL=postgresql://timetable_user:password@localhost:5432/timetable_db
+JWT_SECRET=generate_random_32_char_string
 PYTHON_PATH=./venv/bin/python
 NODE_ENV=development
 ```
 
-See [SETUP.md](SETUP.md) for detailed configuration.
-
----
-
-## 🧪 Testing
-
-### Sample Data
-Test files are located in the `examples/` directory:
-- **[examples/sample-timetable-input.json](examples/sample-timetable-input.json)** - Sample timetable input
-- **[examples/sample-api-request.json](examples/sample-api-request.json)** - Sample API request format
-
-### Manual Testing
-1. Create a test timetable with sample data from examples folder
-2. Verify scheduling completes without conflicts
-3. Export and verify output format
-
-### API Testing
+Generate JWT_SECRET:
 ```bash
-# Login
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"password"}'
-
-# Get timetables
-curl http://localhost:3000/api/timetables \
-  -H "Authorization: Bearer <token>"
+openssl rand -hex 32  # Linux/macOS
 ```
-
----
 
 ## 🐛 Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
-| Python not found | Set `PYTHON_PATH` in `.env` |
-| Database connection fails | Ensure PostgreSQL is running |
-| Port 3000 in use | Change `PORT` in `.env` or kill process |
-| JWT_SECRET error | Run `npm run setup` to generate |
+| Issue | Fix |
+|-------|-----|
+| Python not found | Update PYTHON_PATH in .env |
+| DB connection fails | Start PostgreSQL, verify credentials |
+| Port 3000 in use | Change PORT in .env to 3001 |
+| Setup fails | See SETUP.md troubleshooting |
 
-See [SETUP.md](SETUP.md#troubleshooting) for detailed solutions.
+## 📖 More Help
+See [SETUP.md](SETUP.md) for detailed troubleshooting.
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-This project is licensed under the ISC License - see LICENSE file for details.
-
----
-
-## ✉️ Support
-
-For issues and questions:
-- 📋 Check [SETUP.md](SETUP.md)
-- 🐛 Open an [GitHub Issue](https://github.com/yashrajghongane/academic-timetable-generator/issues)
-- 📧 Contact the maintainers
-
----
-
-## 🙏 Acknowledgments
-
-- Built with [Google OR-Tools](https://developers.google.com/optimization)
-- UI powered by [Tailwind CSS](https://tailwindcss.com)
-- Backend framework [Express.js](https://expressjs.com)
-
----
-
-**Made with ❤️**
-# academic-timetable-generator
+## 📄 License
+ISC License

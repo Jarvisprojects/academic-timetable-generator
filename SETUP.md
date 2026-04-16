@@ -1,3 +1,193 @@
+# 🛠️ Setup Guide
+
+Complete installation instructions for Academic Timetable Generator.
+
+## 📋 Prerequisites
+
+Before starting, ensure installed:
+```bash
+node --version       # v18+
+python3 --version    # v3.9+  
+psql --version       # v13+
+git --version        # v2+
+```
+
+## 🚀 Installation (5 Steps)
+
+### 1. Clone & Install Dependencies
+```bash
+git clone https://github.com/yashrajghongane/academic-timetable-generator.git
+cd academic-timetable-generator
+npm install
+```
+
+### 2. Create PostgreSQL Database
+```bash
+# Create database
+createdb timetable_db
+
+# Create user with privileges
+psql -U postgres -d timetable_db << EOF
+CREATE USER timetable_user WITH PASSWORD 'your_secure_password';
+ALTER DATABASE timetable_db OWNER TO timetable_user;
+GRANT ALL PRIVILEGES ON SCHEMA public TO timetable_user;
+EOF
+```
+
+### 3. Setup Python Virtual Environment
+
+**Linux/macOS:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install ortools
+deactivate
+```
+
+**Windows:**
+```cmd
+python -m venv venv
+venv\Scripts\activate
+pip install ortools
+deactivate
+```
+
+### 4. Configure Environment
+
+Copy template and edit:
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your values:
+```env
+PORT=3000
+DATABASE_URL=postgresql://timetable_user:your_secure_password@localhost:5432/timetable_db
+JWT_SECRET=<generate_random_32_char_string>
+PYTHON_PATH=./venv/bin/python
+NODE_ENV=development
+```
+
+Generate JWT_SECRET:
+```bash
+# Linux/macOS
+openssl rand -hex 32
+
+# Windows PowerShell
+[Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Max 256) }))
+```
+
+### 5. Initialize & Start
+
+```bash
+# Create database tables and admin user
+npm run setup:db
+
+# Start application
+npm start
+```
+
+Open **http://localhost:3000** and login!
+
+## 🧪 Testing
+
+1. **Login** - Use admin account created in step 5
+2. **Create Timetable** - Add 2-3 teachers, subjects, rooms
+3. **Set Time Slots** - 8AM-5PM, 1 hour each
+4. **Generate** - Click "Generate Schedule"
+5. **View Results** - Check grid and JSON output
+
+## 📁 Project Structure
+
+```
+backend/         - Express API + EJS templates
+frontend/        - JavaScript utilities
+scheduler/       - Python optimizer (OR-Tools)
+examples/        - Sample data files
+```
+
+## 🔧 Available Commands
+
+```bash
+npm start         # Start application  
+npm run setup:db  # Initialize database
+npm run setup:admin # Create admin account
+```
+
+## 🐛 Troubleshooting
+
+### Python Not Found
+Update `PYTHON_PATH` in `.env`:
+```env
+PYTHON_PATH=/usr/bin/python3
+```
+
+### PostgreSQL Connection Fails
+Check database is running and credentials match `.env`:
+```bash
+psql postgresql://timetable_user:your_password@localhost:5432/timetable_db
+```
+
+### Port 3000 Already In Use
+Change port in `.env`:
+```env
+PORT=3001
+```
+
+Or kill process:
+```bash
+# Linux/macOS
+lsof -ti:3000 | xargs kill -9
+
+# Windows
+netstat -ano | findstr :3000
+taskkill /PID <PID> /F
+```
+
+### Module Not Found Error
+Reinstall dependencies:
+```bash
+rm -rf node_modules
+npm install
+```
+
+### Database Tables Don't Exist
+Run initialization:
+```bash
+npm run setup:db
+```
+
+## 📊 Environment Variables
+
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| PORT | Server port | 3000 |
+| DATABASE_URL | PostgreSQL connection | postgresql://user:pass@localhost:5432/db |
+| JWT_SECRET | Login token secret | random_32_char_minimum |
+| PYTHON_PATH | Python executable | ./venv/bin/python |
+| NODE_ENV | Environment mode | development/production |
+
+## ✅ Production Checklist
+
+Before deploying:
+- [ ] Set NODE_ENV=production
+- [ ] Use strong JWT_SECRET (50+ chars)
+- [ ] Use strong database password
+- [ ] Enable HTTPS/SSL
+- [ ] Setup database backups
+- [ ] Configure error monitoring
+- [ ] Setup firewall rules
+
+## 🆘 Still Having Issues?
+
+1. Verify all prerequisites installed
+2. Check all `.env` values correct
+3. Ensure PostgreSQL running
+4. Try reinstalling: `npm install`
+5. Check terminal error messages
+6. Review error logs carefully
+
+For more help see [README.md](README.md)
 # 📋 Setup Guide - Academic Timetable Generator
 
 Complete installation instructions for the Academic Timetable Generator.
