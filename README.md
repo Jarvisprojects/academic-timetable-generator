@@ -25,40 +25,80 @@ Automatically generate **conflict-free schedules** using Python optimization.
 - PostgreSQL v13+ https://www.postgresql.org/
 - Git https://git-scm.com/
 
-## 🚀 Setup (5 minutes)
+## 🚀 Setup
+
+### 🐧 Linux / macOS Setup
 
 ```bash
-# 1. Clone
+# 1. Clone and install dependencies
 git clone https://github.com/yashrajghongane/academic-timetable-generator.git
 cd academic-timetable-generator
-
-# 2. Install dependencies
 npm install
 
-# 3. Setup Database
-createdb timetable_db
-psql -U postgres -d timetable_db -c "
-CREATE USER timetable_user WITH PASSWORD 'your_password';
+# 2. Create database and user
+sudo -u postgres createdb timetable_db
+sudo -u postgres psql timetable_db << 'EOF'
+CREATE USER timetable_user WITH PASSWORD 'your_secure_password';
+ALTER ROLE timetable_user CREATEDB SUPERUSER;
 GRANT ALL PRIVILEGES ON DATABASE timetable_db TO timetable_user;
-"
+EOF
 
-# 4. Configure
-cp .env.example .env
-# Edit .env with your database credentials
+# 3. Initialize database schema
+psql postgresql://timetable_user:your_secure_password@localhost:5432/timetable_db < init.sql
 
-# 5. Python Environment
+# 4. Setup Python virtual environment
 python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
-# or: venv\Scripts\activate  (Windows)
+source venv/bin/activate
 pip install ortools
 deactivate
 
-# 6. Initialize & Start
-npm run setup:db
+# 5. Configure environment
+cp .env.example .env
+# Edit .env with your database credentials (see .env Configuration below)
+
+# 6. Create admin account
+node backend/create-admin.js admin your_password_here
+
+# 7. Start application
 npm start
 ```
 
-Open **http://localhost:3000** and login!
+### 🪟 Windows Setup
+
+```cmd
+# 1. Clone and install dependencies
+git clone https://github.com/yashrajghongane/academic-timetable-generator.git
+cd academic-timetable-generator
+npm install
+
+# 2. Create database and user (using PostgreSQL's psql)
+# First, open psql as administrator and run:
+CREATE DATABASE timetable_db;
+CREATE USER timetable_user WITH PASSWORD 'your_secure_password';
+ALTER ROLE timetable_user CREATEDB SUPERUSER;
+GRANT ALL PRIVILEGES ON DATABASE timetable_db TO timetable_user;
+
+# 3. Initialize database schema
+psql -U timetable_user -d timetable_db -f init.sql
+
+# 4. Setup Python virtual environment
+python -m venv venv
+venv\Scripts\activate
+pip install ortools
+deactivate
+
+# 5. Configure environment
+copy .env.example .env
+REM Edit .env with your database credentials (see .env Configuration below)
+
+# 6. Create admin account
+node backend/create-admin.js admin your_password_here
+
+# 7. Start application
+npm start
+```
+
+Open **http://localhost:3000** and login with your admin credentials!
 
 ## 🧪 Test It
 1. Login with admin account
@@ -77,13 +117,21 @@ examples/    - Sample data
 ```
 
 ## 🔧 Commands
+
 ```bash
-npm start         # Start app
-npm run setup:db  # Setup database
-npm run setup:admin # Create admin
+# Start the application
+npm start
+
+# Create an admin account
+node backend/create-admin.js username password
+
+# Examples:
+node backend/create-admin.js admin admin123
+node backend/create-admin.js teacher teacherpass123
 ```
 
 ## 📋 .env Configuration
+
 ```env
 PORT=3000
 DATABASE_URL=postgresql://timetable_user:password@localhost:5432/timetable_db
@@ -92,10 +140,21 @@ PYTHON_PATH=./venv/bin/python
 NODE_ENV=development
 ```
 
-Generate JWT_SECRET:
+**Generate JWT_SECRET:**
+
+**Linux/macOS:**
 ```bash
-openssl rand -hex 32  # Linux/macOS
+openssl rand -hex 32
 ```
+
+**Windows (using Node.js):**
+```cmd
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+**PYTHON_PATH examples:**
+- **Linux/macOS:** `./venv/bin/python` or `/usr/bin/python3`
+- **Windows:** `venv\Scripts\python.exe` or `C:\Python39\python.exe`
 
 ## 🐛 Troubleshooting
 
