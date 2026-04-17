@@ -316,4 +316,17 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// ========== SETUP WIZARD ==========
+// Run setup wizard on first start (if no admin exists)
+const { runSetupWizard } = require('./setup-wizard');
+
+(async () => {
+    try {
+        await runSetupWizard();
+        app.listen(PORT, () => console.log(`\n🚀 Server running on port ${PORT}\n`));
+    } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
+    }
+})();

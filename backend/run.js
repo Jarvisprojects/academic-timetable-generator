@@ -20,6 +20,11 @@ async function runSolver(timetableId, inputObj) {
             stdio: ['pipe', 'pipe', 'pipe'],
         });
 
+        // Kill the process if it takes too long (45 seconds)
+        const killTimeout = setTimeout(() => {
+            child.kill('SIGTERM');
+        }, 45000);
+
         let stdout = '';
         let stderr = '';
 
@@ -32,12 +37,14 @@ async function runSolver(timetableId, inputObj) {
         });
 
         child.on('error', async (err) => {
+            clearTimeout(killTimeout);
             const message = `Failed to start solver: ${err.message}`;
             await markFailed(timetableId, message);
             reject(new Error(message));
         });
 
         child.on('close', async (code) => {
+            clearTimeout(killTimeout);
             if (code !== 0) {
                 const message = `Solver exited with code ${code}${stderr ? `: ${stderr.trim()}` : ''}`;
                 await markFailed(timetableId, message);

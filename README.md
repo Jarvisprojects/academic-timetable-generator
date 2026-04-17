@@ -1,3 +1,4 @@
+
 # 📅 Academic Timetable Generator
 
 Automatically generate **conflict-free schedules** using Python optimization.

@@ -4,7 +4,35 @@ const fs = require('fs');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const VENV_PATH = path.join(PROJECT_ROOT, 'venv');
-const PYTHON_PATH = process.env.PYTHON_PATH || path.resolve(VENV_PATH, 'bin', 'python');
+
+// Determine Python path with fallbacks
+function getPythonPath() {
+    // Try paths in order of preference
+    const candidates = [
+        path.resolve(VENV_PATH, 'bin', 'python'),
+        '/home/codespace/.python/current/bin/python3',
+        '/usr/bin/python3',
+        'python3',
+        'python'
+    ];
+
+    for (const candidate of candidates) {
+        try {
+            // Check if it's a file (not a directory) and exists
+            const stat = fs.statSync(candidate);
+            if (stat.isFile() || candidate === 'python3' || candidate === 'python') {
+                return candidate;
+            }
+        } catch (e) {
+            // Continue to next candidate
+        }
+    }
+
+    // Return default if nothing found
+    return path.resolve(VENV_PATH, 'bin', 'python');
+}
+
+const PYTHON_PATH = getPythonPath();
 const SCHEDULER_MODULE = 'scheduler';
 
 // ========== ENVIRONMENT VALIDATION ==========

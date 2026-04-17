@@ -27,7 +27,7 @@ router.get('/users', requireAdmin, async (req, res) => {
 });
 
 router.post('/users', requireAdmin, ...validations.username, ...validations.email, handleValidationErrors, async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, is_admin } = req.body;
     if (!username || !email) {
         return res.status(400).json({ error: 'Missing required fields: username and email' });
     }
@@ -36,12 +36,12 @@ router.post('/users', requireAdmin, ...validations.username, ...validations.emai
         return res.status(400).json({ error: 'Password is required and must be at least 8 characters' });
     }
     try {
-        // Always create regular user (is_admin = false)
+        // Allow creating admin users (is_admin parameter is passed from frontend)
         const newUser = await User.create({
             username,
             email,
             password,
-            is_admin: false
+            is_admin: is_admin === true || is_admin === 'true'
         });
         await AuditLog.create({
             user_id: req.user.id,
@@ -49,7 +49,7 @@ router.post('/users', requireAdmin, ...validations.username, ...validations.emai
             target_user_id: newUser.id,
             target_username: username,
             actor_username: req.user.username,
-            new_data: { username, email, is_admin: false }
+            new_data: { username, email, is_admin: newUser.is_admin }
         });
         res.status(201).json(newUser);
     } catch (err) {

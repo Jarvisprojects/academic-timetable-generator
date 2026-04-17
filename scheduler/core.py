@@ -49,7 +49,7 @@ def solve_timetable(json_input: dict) -> dict:
         solver = cp_model.CpSolver()
         solver.parameters.random_seed = 42
         solver.parameters.num_search_workers = 4
-        solver.parameters.max_time_in_seconds = 60
+        solver.parameters.max_time_in_seconds = 30
         solver.parameters.log_search_progress = False
 
         status = solver.Solve(model)

@@ -129,9 +129,20 @@
 
         document.getElementById('export-csv').addEventListener('click', () => {
             let csv = '';
-            // Get the main table
             const table = document.querySelector('table');
             if (table) {
+                // Export header row
+                const headerRow = table.querySelector('thead tr');
+                if (headerRow) {
+                    const headers = [];
+                    headerRow.querySelectorAll('th').forEach(th => {
+                        const text = th.innerText.trim();
+                        headers.push(`"${text.replace(/"/g, '""')}"`);
+                    });
+                    csv += headers.join(',') + '\n';
+                }
+                
+                // Export body rows
                 const rows = table.querySelectorAll('tbody tr');
                 rows.forEach(row => {
                     const rowData = [];
@@ -155,7 +166,7 @@
                 });
             }
             
-            const blob = new Blob([csv], { type: 'text/csv' });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `batch_<%= batch.replace(/[^a-z0-9]/gi, '_') %>_timetable.csv`;

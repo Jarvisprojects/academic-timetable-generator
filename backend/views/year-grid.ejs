@@ -11,6 +11,17 @@
             vertical-align: top;
             min-width: 120px;
         }
+        table {
+            table-layout: auto;
+            width: 100%;
+        }
+        th, td {
+            min-width: 100px;
+        }
+        th {
+            font-weight: 600;
+            white-space: nowrap;
+        }
         .event-item {
             margin-bottom: 0.25rem;
             padding: 0.25rem;
@@ -154,8 +165,8 @@
             }
             
             // Build event grid
-            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
             const daysCount = timetable.input_json.time_settings.days || 5;
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].slice(0, daysCount);
             
             // Initialize events for each timeline item
             mergedTimeline.forEach(item => {
@@ -242,35 +253,49 @@
         
         document.getElementById('export-csv').addEventListener('click', () => {
             let csv = '';
-            const rows = document.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const rowData = [];
-                const cells = row.querySelectorAll('td');
-                cells.forEach(cell => {
-                    const events = cell.querySelectorAll('.event-item');
-                    let content = '';
-                    if (events.length) {
-                        const texts = [];
-                        events.forEach(ev => {
-                            const title = ev.querySelector('.font-semibold')?.innerText || '';
-                            const details = ev.innerText.replace(title, '').trim();
-                            texts.push(`${title} ${details}`);
-                        });
-                        content = texts.join('; ');
-                    } else {
-                        const cellText = cell.innerText.trim();
-                        if (cellText && cellText !== '—') {
-                            content = cellText;
+            const table = document.querySelector('table');
+            if (table) {
+                // Export header row
+                const headerRow = table.querySelector('thead tr');
+                if (headerRow) {
+                    const headers = [];
+                    headerRow.querySelectorAll('th').forEach(th => {
+                        const text = th.innerText.trim();
+                        headers.push(`"${text.replace(/"/g, '""')}"`);
+                    });
+                    csv += headers.join(',') + '\n';
+                }
+                
+                // Export body rows
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const rowData = [];
+                    row.querySelectorAll('td').forEach(cell => {
+                        const events = cell.querySelectorAll('.event-item');
+                        let content = '';
+                        if (events.length) {
+                            const texts = [];
+                            events.forEach(ev => {
+                                const title = ev.querySelector('.font-semibold')?.innerText || '';
+                                const details = ev.innerText.replace(title, '').trim();
+                                texts.push(`${title}: ${details}`);
+                            });
+                            content = texts.join('; ');
                         } else {
-                            content = '—';
+                            const cellText = cell.innerText.trim();
+                            if (cellText && cellText !== '—') {
+                                content = cellText;
+                            } else {
+                                content = '—';
+                            }
                         }
-                    }
-                    rowData.push(`"${content.replace(/"/g, '""')}"`);
+                        rowData.push(`"${content.replace(/"/g, '""')}"`);
+                    });
+                    csv += rowData.join(',') + '\n';
                 });
-                csv += rowData.join(',') + '\n';
-            });
+            }
             
-            const blob = new Blob([csv], { type: 'text/csv' });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `year_<%= year.replace(/[^a-z0-9]/gi, '_') %>_timetable.csv`;
